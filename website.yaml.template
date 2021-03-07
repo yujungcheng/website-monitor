@@ -1,0 +1,7 @@
+#localhost:
+#    url: http://localhost:8080/status.html
+#    pattern: success
+
+google:
+    url: https://google.com
+    pattern: Google
