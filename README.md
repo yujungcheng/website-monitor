@@ -44,7 +44,7 @@ stores check result into PostgreSQL database. It is written in python3.6
     pattern: <pattern to search in website content>
 ```
 Maximum 32 characters for website name.
-Maximum 128 characters fro url
+Maximum 128 characters for url.
 
 ## Usage
 ```
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS status_history (
 ```
 
 ## Note
-make sure one partition for a topic.
+- make sure one partition for a topic.
 
 ## To fix
 - daemon mode does not work
@@ -108,6 +108,9 @@ make sure one partition for a topic.
 - add feature to create and write check result into specific table name.
 - configuration verifying
 - improve logging
+- create topic automatically
+- handle kafka connection loss
+- website checking test
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to
