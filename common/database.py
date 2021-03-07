@@ -44,7 +44,7 @@ class PostgreSQL():
             """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS website (
-                    name VARCHAR (128) PRIMARY KEY,
+                    name VARCHAR (32) PRIMARY KEY,
                     created_at TIMESTAMP,
                     url VARCHAR (128) NOT NULL
                 );

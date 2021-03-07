@@ -16,10 +16,11 @@ from common.database import PostgreSQL
 def main(argv, log):
     log.info(f'Writer start.')
     websites = dict()
+    config_file = './config.ini' # default config file name
     db = None
     kf = None
     try:
-        db_cfg = get_config('postgre') # read database config
+        db_cfg = get_config('postgre', filepath=config_file)
         db = PostgreSQL(db_cfg['host'],
                         db_cfg['port'],
                         db_cfg['dbname'],
@@ -40,7 +41,7 @@ def main(argv, log):
         log.info(f'websites in database: {websites}')
 
         # read kafka config
-        kf_cfg = get_config('kafka')
+        kf_cfg = get_config('kafka', filepath=config_file)
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],

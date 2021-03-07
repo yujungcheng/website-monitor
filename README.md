@@ -8,15 +8,15 @@ stores check result into PostgreSQL database. It is written in python3.6
 ## Version
 - 06-Feb-2021 1.0 initial version
 
-## required packages installation via apt
-- python3-requests
-- python3-daemon
-- python3-psycopg2
+## Required packages installation
+- python3-requests 2.18.4
+- python3-daemon 2.1.2
+- python3-psycopg2 2.7.4
+- pykafka 2.8.0
 
 ## Component
 - checker - check websites status and forward result to kafka. It is Kafka producer.
 - writer - fetch result from kafka and store into database. It is Kafka consumer.
-
 
 ## Configuration syntax
 - config.ini
@@ -39,10 +39,12 @@ stores check result into PostgreSQL database. It is written in python3.6
 ```
 - website.yaml
 ```
-google:
-    url: website url
-    pattern: pattern to search in website content
+<websit name>:
+    url: <website url>
+    pattern: <pattern to search in website content>
 ```
+Maximum 32 characters for website name.
+Maximum 128 characters fro url
 
 ## Usage
 ```
@@ -78,7 +80,7 @@ CREATE TABLE IF NOT EXISTS topic (
 );
 
 CREATE TABLE IF NOT EXISTS website (
-    name VARCHAR (128) PRIMARY KEY,
+    name VARCHAR (32) PRIMARY KEY,
     created_at TIMESTAMP,
     url VARCHAR (128) NOT NULL
 );
@@ -101,6 +103,11 @@ make sure one partition for a topic.
 
 ## To fix
 - daemon mode does not work
+
+## To do
+- add feature to create and write check result into specific table name.
+- configuration verifying
+- improve logging
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to

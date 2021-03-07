@@ -62,7 +62,8 @@ class WebsiteChecker(Thread):
 def main(args, log):
     log.info(f'Checker start.')
     checkers = []  # store website checker threads
-    website_yaml_file = './website.yaml' # default website yaml file
+    config_file = './config.ini' # default config file name
+    website_yaml_file = './website.yaml' # default website yaml file name
     result_queue = Queue()  # queue to forward result to main thread
     db = None
     try:
@@ -72,7 +73,7 @@ def main(args, log):
             check_interval = 1
         log.info(f'website check interval: {check_interval} seconds.')
 
-        kf_cfg = get_config('kafka') # read kafka config
+        kf_cfg = get_config('kafka', filepath=config_file) # read kafka config
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],
