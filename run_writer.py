@@ -124,7 +124,7 @@ def main(argv, log):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description='Website monitor')
+    parser = ArgumentParser(description='Website monitor - writer')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
     parser.add_argument('--debug', action='store_true', help='enable debug')
     args = parser.parse_args()
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     else:
         log = get_log()
     if args.daemon: # run in deamon mode
-        with daemon.DaemonContext():
+        with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)
     else:
         main(args, log)

@@ -6,6 +6,7 @@ import json
 import daemon
 import requests
 import re
+import os
 
 from argparse import ArgumentParser
 from threading import Thread
@@ -115,7 +116,7 @@ def main(args, log):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description='Website monitor')
+    parser = ArgumentParser(description='Website monitor - checker')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
     parser.add_argument('--debug', action='store_true', help='enable debug')
     parser.add_argument('--interval', default=10, help='checking interval')
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     else:
         log = get_log()
     if args.daemon: # run in deamon mode
-        with daemon.DaemonContext():
+        with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)
     else:
         main(args, log)

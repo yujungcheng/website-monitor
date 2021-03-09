@@ -1,0 +1,7 @@
+*.pyc
+*.cert
+*.key
+*.pem
+*.ini
+*.yaml
+**/__pycache__/
