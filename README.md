@@ -108,7 +108,8 @@ CREATE TABLE IF NOT EXISTS status_history (
 - add feature to create and write check result into specific table name.
 - configuration verifying
 - improve logging
-- create topic automatically
+- create topic automatically. seems like no library support to create topic.
+  (https://github.com/Parsely/pykafka/issues/514)
 - handle kafka connection loss
 - website checking test
 
