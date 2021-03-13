@@ -17,6 +17,7 @@ def get_log(level=logging.INFO,
     logging.basicConfig(level=level, format=format)
     return logging
 
+
 def get_config(section_name, filepath='./config.ini'):
     try:
         if not os.path.exists(filepath):
@@ -32,6 +33,7 @@ def get_config(section_name, filepath='./config.ini'):
     except Exception as e:
         print(e)
         sys.exit(1)
+
 
 def read_yaml(filepath='./website.yaml'):
     try:

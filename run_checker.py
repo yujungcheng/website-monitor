@@ -38,7 +38,7 @@ class WebsiteChecker(Thread):
                 start_time = time.time()
                 r = requests.get(self.url)
                 response_time = time.time() - start_time
-                content_check = bool(pattern.search(r.text)) # check pattern
+                content_check = bool(pattern.search(r.text))  # check pattern
                 time_tuple = time.localtime(start_time)
                 created_at = time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)
                 result = {
@@ -63,8 +63,8 @@ class WebsiteChecker(Thread):
 def main(args, log):
     log.info(f'Checker start.')
     checkers = []  # store website checker threads
-    config_file = './config.ini' # default config file name
-    website_yaml_file = './website.yaml' # default website yaml file name
+    config_file = './config.ini'  # default config file name
+    website_yaml_file = './website.yaml'  # default website yaml file name
     result_queue = Queue()  # queue to forward result to main thread
     db = None
     try:
@@ -74,7 +74,7 @@ def main(args, log):
             check_interval = 1
         log.info(f'website check interval: {check_interval} seconds.')
 
-        kf_cfg = get_config('kafka', filepath=config_file) # read kafka config
+        kf_cfg = get_config('kafka', filepath=config_file)  # read kafka config
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],
@@ -83,7 +83,7 @@ def main(args, log):
                    log)
         if kf.set_client() == False:
             raise Exception("error to set kafka client.")
-        topic = kf.get_topic(kf_cfg['topic']) # get Kafka topic
+        topic = kf.get_topic(kf_cfg['topic'])  # get Kafka topic
         if topic == False:
             raise Exception("error to get kafka topic.")
 
@@ -103,7 +103,7 @@ def main(args, log):
         log.info(f'produce result to kafka')
         with topic.get_sync_producer() as producer:
             while True:
-                result = result_queue.get() # get result from queue
+                result = result_queue.get()  # get result from queue
                 log.debug(f'produce - {result}')
                 producer.produce(bytes(result))
     except Exception as e:
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         log = get_log(level=logging.DEBUG)
     else:
         log = get_log()
-    if args.daemon: # run in deamon mode
+    if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)
     else:

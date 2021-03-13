@@ -17,7 +17,7 @@ from common.database import PostgreSQL
 def main(argv, log):
     log.info(f'Writer start.')
     websites = dict()
-    config_file = './config.ini' # default config file name
+    config_file = './config.ini'  # default config file name
     db = None
     kf = None
     try:
@@ -27,11 +27,11 @@ def main(argv, log):
                         db_cfg['dbname'],
                         db_cfg['user'],
                         db_cfg['password'],
-                        log = log)
+                        log=log)
         if db.connect() != True:  # set connection
             log.error("unable to connect database.")
             raise Exception("error to set kafka client.")
-        db.initialise_database() # create tables if not exist
+        db.initialise_database()  # create tables if not exist
 
         # get all websites from database
         rows = db.get_website()
@@ -49,7 +49,7 @@ def main(argv, log):
                    kf_cfg['certfile'],
                    kf_cfg['keyfile'],
                    log)
-        if kf.set_client() == False: # set kafka client
+        if kf.set_client() == False:  # set kafka client
             raise Exception("error to set kafka client.")
         topic_name = kf_cfg['topic']
         topic = kf.get_topic(topic_name)
@@ -77,7 +77,7 @@ def main(argv, log):
 
         log.info(f'start retriving messages.')
         while True:
-            results = [] # bulk results to store into database
+            results = []  # bulk results to store into database
             for i in range(0, 100):
                 message = consumer.consume()
                 if message == None:
@@ -92,21 +92,18 @@ def main(argv, log):
                 # append new offset result to bulk result when offset value
                 # in database is less than offset value in kafka topic
                 if db_offset < message.offset:
+                    if name not in websites:  # add new website to database
+                        now = datetime.now()
+                        created_time = now.strftime("%d-%m-%Y %H:%M:%S")
+                        log.info(f'add new website {name}, {url}')
+                        db.add_website(created_time, name, url)
+                        websites[name] = url
                     created_at = result['created_at']
                     status_code = result['status_code']
                     response_time = result['response_time']
                     content_check = result['content_check']
                     values = (created_at, name, status_code,
                               response_time, content_check)
-
-                    # add new website to database
-                    if name not in websites:
-                        now = datetime.now()
-                        created_time = now.strftime("%d-%m-%Y %H:%M:%S")
-                        log.info(f'add new website {name}, {url}')
-                        db.add_website(created_time, name, url)
-                        websites[name] = url
-
                     results.append(values)
 
             # write results to database
@@ -133,7 +130,7 @@ if __name__ == "__main__":
         log = get_log(level=logging.DEBUG)
     else:
         log = get_log()
-    if args.daemon: # run in deamon mode
+    if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)
     else:

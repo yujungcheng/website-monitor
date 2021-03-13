@@ -182,7 +182,7 @@ class PostgreSQL():
             """
             vars = (name, )
             cur.execute(sql, vars)
-            ret =  cur.fetchone()
+            ret = cur.fetchone()
             if ret == None:
                 return False
             return ret
