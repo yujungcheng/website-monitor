@@ -73,7 +73,7 @@ def main(argv, log):
         log.info(f'get simple consumer, group={consumer_group_name}')
         consumer = topic.get_simple_consumer(
             consumer_group=consumer_group_name,
-            consumer_timeout_ms=1000)
+            consumer_timeout_ms=2000)
 
         log.info(f'start retriving messages.')
         while True:
@@ -89,14 +89,6 @@ def main(argv, log):
                 name = result['name']
                 url = result['url']
 
-                # add new website to database
-                if name not in websites:
-                    now = datetime.now()
-                    created_time = now.strftime("%d-%m-%Y %H:%M:%S")
-                    log.info(f'add new website {name}, {url}')
-                    db.add_website(created_time, name, url)
-                    websites[name] = url
-
                 # append new offset result to bulk result when offset value
                 # in database is less than offset value in kafka topic
                 if db_offset < message.offset:
@@ -106,15 +98,23 @@ def main(argv, log):
                     content_check = result['content_check']
                     values = (created_at, name, status_code,
                               response_time, content_check)
+
+                    # add new website to database
+                    if name not in websites:
+                        now = datetime.now()
+                        created_time = now.strftime("%d-%m-%Y %H:%M:%S")
+                        log.info(f'add new website {name}, {url}')
+                        db.add_website(created_time, name, url)
+                        websites[name] = url
+
                     results.append(values)
 
             # write results to database
-            result_count = len(results)
-            if result_count != 0:
+            if results != []:
+                result_count = len(results)
                 log.debug(f'write {result_count} new results to database.')
                 db_offset += result_count
                 db.add_check_results(results, topic_name, db_offset)
-            time.sleep(1)
     except Exception as e:
         log.error(e)
     except KeyboardInterrupt:

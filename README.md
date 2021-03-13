@@ -101,9 +101,6 @@ CREATE TABLE IF NOT EXISTS status_history (
 ## Note
 - make sure one partition for a topic.
 
-## To fix
-- daemon mode does not work
-
 ## To do
 - add feature to create and write check result into specific table name.
 - configuration verifying
@@ -112,6 +109,7 @@ CREATE TABLE IF NOT EXISTS status_history (
   (https://github.com/Parsely/pykafka/issues/514)
 - handle kafka connection loss
 - website checking test
+- prevent sql injection attach
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to

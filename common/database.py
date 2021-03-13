@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import psycopg2
+
+from psycopg2 import sql
 from psycopg2 import extras
 
 
@@ -82,17 +84,19 @@ class PostgreSQL():
                         website
                 """)
             else:
-                cur.execute("""
+                sql = """
                     SELECT
                         name,
                         url
                     FROM
                         website
                     WHERE
-                        name='%s'
+                        name=%s
                     AND
-                        url='%s'
-                """ % (name, url))
+                        url=%s
+                """
+                vars = (name, url, )
+                cur.execute(sql, vars)
             return cur.fetchall()
         except Exception as e:
             self.log.error(e)
@@ -103,14 +107,38 @@ class PostgreSQL():
     def add_website(self, created_at, name, url):
         try:
             cur = self.conn.cursor()
-            cur.execute("""
+            sql = """
                 INSERT INTO website (
                     created_at,
                     name,
                     url
                 )
-                VALUES('%s', '%s', '%s')
-            """ % (created_at, name, url))
+                VALUES(%s, %s, %s)
+            """
+            vars = (created_at, name, url, )
+            cur.execute(sql, vars)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            self.log.error(e)
+            return False
+        finally:
+            cur.close()
+
+    def del_website(self, name, url):
+        """  for test purpose """
+        try:
+            cur = self.conn.cursor()
+            sql = """
+                DELETE FROM
+                    website
+                WHERE
+                    name=%s
+                AND
+                    url=%s
+            """
+            vars = (name, url)
+            cur.execute(sql, vars)
             self.conn.commit()
             return True
         except Exception as e:
@@ -120,18 +148,19 @@ class PostgreSQL():
             cur.close()
 
     def add_topic(self, name, created_at):
-        """ create
-        """
+        """ Create topic to record last offset of the topic """
         try:
             cur = self.conn.cursor()
-            cur.execute("""
+            slq = """
                 INSERT INTO topic (
                     name,
                     created_at,
                     topic_offset
                 )
-                VALUES ('%s', '%s', 0);
-            """ % (name, created_at))
+                VALUES (%s, %s, %s);
+            """
+            vars = (name, created_at, 0, )
+            cur.execute(sql, vars)
             self.conn.commit()
             return True
         except Exception as e:
@@ -143,14 +172,16 @@ class PostgreSQL():
     def get_topic_offset(self, name):
         try:
             cur = self.conn.cursor()
-            cur.execute("""
+            sql = """
                 SELECT
                     topic_offset
                 FROM
                     topic
                 WHERE
-                    name = '%s'
-            """ % name)
+                    name = %s
+            """
+            vars = (name, )
+            cur.execute(sql, vars)
             ret =  cur.fetchone()
             if ret == None:
                 return False
@@ -171,7 +202,7 @@ class PostgreSQL():
         """
         try:
             with self.conn.cursor() as cur:
-                query = """
+                sql_status_history = """
                 INSERT INTO status_history (
                     created_at,
                     website_name,
@@ -181,12 +212,14 @@ class PostgreSQL():
                 )
                 VALUES %s
                 """
-                extras.execute_values(cur, query, results)
-                cur.execute("""
+                extras.execute_values(cur, sql_status_history, results)
+                sql_topic = """
                     UPDATE topic
                     SET topic_offset = %s
-                    WHERE name = '%s'
-                """ % (topic_offset, topic_name))
+                    WHERE name = %s
+                """
+                vars = (topic_offset, topic_name, )
+                cur.execute(sql_topic, vars)
             self.conn.commit()
             return True
         except Exception as e:
