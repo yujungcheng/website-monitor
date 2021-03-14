@@ -119,12 +119,20 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='Website monitor - checker')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
     parser.add_argument('--debug', action='store_true', help='enable debug')
+    parser.add_argument('--filelog', action='store_true', help='log to file')
     parser.add_argument('--interval', default=10, help='checking interval')
     args = parser.parse_args()
     if args.debug:
-        log = get_log(level=logging.DEBUG)
+        if args.filelog:
+            log = get_log(name='checker', level=logging.DEBUG, filelog=True)
+        else:
+            log = get_log(name='checker', level=logging.DEBUG)
     else:
-        log = get_log()
+        if args.filelog:
+            log = get_log(name='checker', filelog=True)
+        else:
+            log = get_log(name='checker')
+
     if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)

@@ -125,11 +125,19 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='Website monitor - writer')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
     parser.add_argument('--debug', action='store_true', help='enable debug')
+    parser.add_argument('--filelog', action='store_true', help='log to file')
     args = parser.parse_args()
     if args.debug:
-        log = get_log(level=logging.DEBUG)
+        if args.filelog:
+            log = get_log(name='writer', level=logging.DEBUG, filelog=True)
+        else:
+            log = get_log(name='writer', level=logging.DEBUG)
     else:
-        log = get_log()
+        if args.filelog:
+            log = get_log(name='writer', filelog=True)
+        else:
+            log = get_log(name='writer')
+
     if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)

@@ -48,25 +48,30 @@ Maximum 128 characters for url.
 
 ## Usage
 ```
-usage: run_checker.py [-h] [--daemon] [--debug] [--interval INTERVAL]
+usage: run_checker.py [-h] [--daemon] [--debug] [--filelog]
+                      [--interval INTERVAL]
 
-Website monitor
+Website monitor - checker
 
 optional arguments:
   -h, --help           show this help message and exit
   --daemon             daemon mode
   --debug              enable debug
+  --filelog            log to file
   --interval INTERVAL  checking interval
-```
-```
-usage: run_writer.py [-h] [--daemon] [--debug]
 
-Website monitor
+```
+```
+usage: run_writer.py [-h] [--daemon] [--debug] [--filelog]
+
+Website monitor - writer
 
 optional arguments:
   -h, --help  show this help message and exit
   --daemon    daemon mode
   --debug     enable debug
+  --filelog   log to file
+
 ```
 
 ## Database tables
