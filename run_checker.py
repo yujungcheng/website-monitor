@@ -84,6 +84,9 @@ def main(args, log):
 
         # connect kafka and get topic
         kf_cfg = get_config(config_file, 'kafka')  # read kafka config
+        for key in ('host', 'port', 'cafile', 'certfile', 'keyfile', 'topic'):
+            if key not in kf_cfg:
+                raise(f'kafka config missing {key}.')
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],
@@ -99,6 +102,9 @@ def main(args, log):
         # run website checker threads
         websites = read_yaml(website_yaml_file)
         for name, info in websites.items():
+            for key in ['url', 'pattern']:
+                if key not in info:
+                    raise(f'website config missing {key}')
             checker = WebsiteChecker(name,
                                      info['url'],
                                      info['pattern'],

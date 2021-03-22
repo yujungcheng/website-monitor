@@ -28,6 +28,9 @@ def main(argv, log):
         log.info(f'configure file: {config_file}')
 
         db_cfg = get_config(config_file, 'postgre')
+        for key in ('host', 'port', 'dbname', 'user', 'password'):
+            if key not in db_cfg:
+                raise(f'database config missing {key}.')
         db = PostgreSQL(db_cfg['host'],
                         db_cfg['port'],
                         db_cfg['dbname'],
@@ -49,6 +52,9 @@ def main(argv, log):
 
         # read kafka config
         kf_cfg = get_config(config_file, 'kafka')
+        for key in ('host', 'port', 'cafile', 'certfile', 'keyfile', 'topic'):
+            if key not in kf_cfg:
+                raise(f'kafka config missing {key}.')
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],

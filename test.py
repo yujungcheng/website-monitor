@@ -21,15 +21,16 @@ website_yaml_file = './website.yaml'
 print("[ Verify configuration file ]")
 
 try:
-    db_config = get_config('postgre', filepath=config_file)
+    db_config = get_config(config_file, 'postgre')
     for key in ('host', 'port', 'dbname', 'user', 'password'):
         if key not in db_config:
             raise(f'- database config missing {key}.')
 
-    kf_config = get_config('kafka', filepath=config_file)
+    kf_config = get_config(config_file, 'kafka')
     for key in ('host', 'port', 'cafile', 'certfile', 'keyfile', 'topic'):
         if key not in kf_config:
             raise(f'- kafka config missing {key}.')
+
 except Exception as e:
     test_stop = True
     print(e)
