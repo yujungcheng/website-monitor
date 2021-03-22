@@ -3,7 +3,6 @@
 
 import logging
 import re
-import sys
 import os
 import yaml
 
@@ -44,10 +43,10 @@ def get_rotating_file_log(name, level, format, logfile,
     return logger
 
 
-def get_config(section_name, filepath='./config.ini'):
+def get_config(filepath, section_name):
     try:
         if not os.path.exists(filepath):
-            raise Exception("monitor config file not found.")
+            raise Exception(f'config file {filepath} not found.')
         conf = dict()
         parser = ConfigParser()
         parser.read(filepath)
@@ -57,17 +56,15 @@ def get_config(section_name, filepath='./config.ini'):
                 conf[option[0]] = option[1]
         return conf
     except Exception as e:
-        print(e)
-        sys.exit(1)
+        raise(e)
 
 
-def read_yaml(filepath='./website.yaml'):
+def read_yaml(filepath):
     try:
         if not os.path.exists(filepath):
-            raise Exception("website config file not found.")
+            raise Exception(f'yaml file {filepath} not found.')
         with open(filepath, 'r') as f:
             data = yaml.safe_load(f)
         return OrderedDict(data)
     except Exception as e:
-        print(e)
-        sys.exit(1)
+        raise(e)

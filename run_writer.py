@@ -13,6 +13,8 @@ from common.utils import *
 from common.kafka import Kafka
 from common.database import PostgreSQL
 
+from pykafka.exceptions import SocketDisconnectedError, LeaderNotAvailable
+
 
 def main(argv, log):
     log.info(f'Writer start.')
@@ -21,7 +23,11 @@ def main(argv, log):
     db = None
     kf = None
     try:
-        db_cfg = get_config('postgre', filepath=config_file)
+        if args.config != None:
+            config_file = args.config
+        log.info(f'configure file: {config_file}')
+
+        db_cfg = get_config(config_file, 'postgre')
         db = PostgreSQL(db_cfg['host'],
                         db_cfg['port'],
                         db_cfg['dbname'],
@@ -42,7 +48,7 @@ def main(argv, log):
         log.info(f'websites in database: {websites}')
 
         # read kafka config
-        kf_cfg = get_config('kafka', filepath=config_file)
+        kf_cfg = get_config(config_file, 'kafka')
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],
@@ -75,14 +81,25 @@ def main(argv, log):
             consumer_group=consumer_group_name,
             consumer_timeout_ms=2000)
 
-        log.info(f'start retriving messages.')
+        log.info(f'start consuming messages.')
         while True:
             results = []  # bulk results to store into database
             for i in range(0, 100):
-                message = consumer.consume()
-                if message == None:
+                try:
+                    message = consumer.consume()
+                    if message == None:
+                        break
+                except (SocketDisconnectedError) as e:
+                    # handling connection loss
+                    log.warning(f'consumer socket disconnect. {e}')
+                    time.sleep(1)
+                    consumer = topic.get_simple_consumer(
+                        consumer_group=consumer_group_name,
+                        consumer_timeout_ms=2000)
                     break
-
+                except Exception as e:
+                    log.warning(f'consumer exception occur. {e}')
+                    break
                 # processing message
                 log.debug(f'consuming message, offset={message.offset}')
                 result = json.loads(message.value.decode('utf-8'))
@@ -112,31 +129,34 @@ def main(argv, log):
                 log.debug(f'write {result_count} new results to database.')
                 db_offset += result_count
                 db.add_check_results(results, topic_name, db_offset)
+
     except Exception as e:
         log.error(e)
     except KeyboardInterrupt:
-        log.info("Writer exiting")
+        log.info("stop running writer.")
     finally:
         if db != None:
             db.disconnect()
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description='Website monitor - writer')
+    name = 'writer'
+    parser = ArgumentParser(description=f'Website monitor - {name}')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
+    parser.add_argument('--config', help='config file path')
     parser.add_argument('--debug', action='store_true', help='enable debug')
     parser.add_argument('--filelog', action='store_true', help='log to file')
     args = parser.parse_args()
     if args.debug:
         if args.filelog:
-            log = get_log(name='writer', level=logging.DEBUG, filelog=True)
+            log = get_log(name=name, level=logging.DEBUG, filelog=True)
         else:
-            log = get_log(name='writer', level=logging.DEBUG)
+            log = get_log(name=name, level=logging.DEBUG)
     else:
         if args.filelog:
-            log = get_log(name='writer', filelog=True)
+            log = get_log(name=name, filelog=True)
         else:
-            log = get_log(name='writer')
+            log = get_log(name=name)
 
     if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):

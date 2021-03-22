@@ -16,6 +16,8 @@ from datetime import datetime
 from common.utils import *
 from common.kafka import Kafka
 
+from pykafka.exceptions import SocketDisconnectedError, LeaderNotAvailable
+
 
 class WebsiteChecker(Thread):
     def __init__(self, name, url, pattern, result_queue, log, interval=10):
@@ -30,7 +32,8 @@ class WebsiteChecker(Thread):
 
     def run(self):
         pattern = re.compile(self.pattern)
-        self.log.info(f'start checking {self.name}, url={self.url}')
+        self.log.info(f'start checking {self.name}, url={self.url}, '
+                      f'interval={self.interval}')
         while True:
             if self.stop_flag:
                 break
@@ -65,16 +68,22 @@ def main(args, log):
     checkers = []  # store website checker threads
     config_file = './config.ini'  # default config file name
     website_yaml_file = './website.yaml'  # default website yaml file name
-    result_queue = Queue()  # queue to forward result to main thread
-    db = None
+    result_queue = Queue(3000)  # queue to forward result to main thread
     try:
         check_interval = float(args.interval)
         if check_interval < 1:
             log.warning(f'interval too small, set to 1.')
             check_interval = 1
         log.info(f'website check interval: {check_interval} seconds.')
+        if args.config != None:
+            config_file = args.config
+        log.info(f'configure file: {config_file}')
+        if args.website != None:
+            website_yaml_file = args.website
+        log.info(f'website yaml file: {website_yaml_file}')
 
-        kf_cfg = get_config('kafka', filepath=config_file)  # read kafka config
+        # connect kafka and get topic
+        kf_cfg = get_config(config_file, 'kafka')  # read kafka config
         kf = Kafka(kf_cfg['host'],
                    kf_cfg['port'],
                    kf_cfg['cafile'],
@@ -98,40 +107,52 @@ def main(args, log):
                                      interval=check_interval)
             checker.start()
             checkers.append(checker)
+    except Exception as e:
+        log.error(f'Exiting checker. {e}')
+        for checker in checkers:
+            checker.stop()
+        exit(1)
 
-        # send check result to kafka
-        log.info(f'produce result to kafka')
+    # produce check result to kafka
+    log.info(f'producing result to kafka.')
+    try:
         with topic.get_sync_producer() as producer:
+            log.info(f'created sync producer.')
             while True:
                 result = result_queue.get()  # get result from queue
                 log.debug(f'produce - {result}')
                 producer.produce(bytes(result))
-    except Exception as e:
-        log.error(e)
+    except (SocketDisconnectedError, LeaderNotAvailable) as e:
+        log.error(f'{e}')
     except KeyboardInterrupt:
-        log.info("Checker exiting.")
+        log.info(f'Stop running checker.')
+    except Exception as e:
+        log.error(f'Unknown exception occur. {e}')
     finally:
         for checker in checkers:
             checker.stop()
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description='Website monitor - checker')
+    name = 'checker'
+    parser = ArgumentParser(description=f'Website monitor - {name}')
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
+    parser.add_argument('--config', help='config file path')
+    parser.add_argument('--website', help='webiste list file')
     parser.add_argument('--debug', action='store_true', help='enable debug')
     parser.add_argument('--filelog', action='store_true', help='log to file')
     parser.add_argument('--interval', default=10, help='checking interval')
     args = parser.parse_args()
     if args.debug:
         if args.filelog:
-            log = get_log(name='checker', level=logging.DEBUG, filelog=True)
+            log = get_log(name=name, level=logging.DEBUG, filelog=True)
         else:
-            log = get_log(name='checker', level=logging.DEBUG)
+            log = get_log(name=name, level=logging.DEBUG)
     else:
         if args.filelog:
-            log = get_log(name='checker', filelog=True)
+            log = get_log(name=name, filelog=True)
         else:
-            log = get_log(name='checker')
+            log = get_log(name=name)
 
     if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
