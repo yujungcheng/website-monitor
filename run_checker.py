@@ -38,29 +38,32 @@ class WebsiteChecker(Thread):
             if self.stop_flag:
                 break
             try:
-                start_time = time.time()
-                r = requests.get(self.url)
-                response_time = time.time() - start_time
-                content_check = bool(pattern.search(r.text))  # check pattern
-                time_tuple = time.localtime(start_time)
-                created_at = time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)
-                result = {
-                    'name': self.name,
-                    'url': self.url,
-                    'created_at': created_at,
-                    'response_time': f'{response_time:.3f}',
-                    'status_code': r.status_code,
-                    'content_check': content_check,
-                }
-                result_str = json.dumps(result).encode('utf-8')
+                result = self.check_website()
                 self.log.debug(f'{r.status_code} - {self.url}')
-                self.result_queue.put(result_str)
+                self.result_queue.put(result)
             except Exception as e:
                 self.log.error(e)
             time.sleep(self.interval)
 
     def stop(self):
         self.stop_flag = True
+
+    def check_website(self):
+        start_time = time.time()
+        r = requests.get(self.url)
+        response_time = time.time() - start_time
+        content_check = bool(pattern.search(r.text))  # check pattern
+        time_tuple = time.localtime(start_time)
+        created_at = time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)
+        result = {
+            'name': self.name,
+            'url': self.url,
+            'created_at': created_at,
+            'response_time': f'{response_time:.3f}',
+            'status_code': r.status_code,
+            'content_check': content_check,
+        }
+        return json.dumps(result).encode('utf-8')
 
 
 def main(args, log):
