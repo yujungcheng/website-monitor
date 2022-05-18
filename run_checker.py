@@ -72,6 +72,7 @@ def main(args, log):
     config_file = './config.ini'  # default config file name
     website_yaml_file = './website.yaml'  # default website yaml file name
     result_queue = Queue(3000)  # queue to forward result to main thread
+    kafka_tls = True  # enable tls connection to kafka
     try:
         check_interval = float(args.interval)
         if check_interval < 1:
@@ -84,6 +85,9 @@ def main(args, log):
         if args.website != None:
             website_yaml_file = args.website
         log.info(f'website yaml file: {website_yaml_file}')
+        if args.notls != None:
+            kafka_tls = False
+        log.info(f'kafka tls connection: {kafka_tls}')
 
         # connect kafka and get topic
         kf_cfg = get_config(config_file, 'kafka')  # read kafka config
@@ -96,7 +100,7 @@ def main(args, log):
                    kf_cfg['certfile'],
                    kf_cfg['keyfile'],
                    log)
-        if kf.set_client() == False:
+        if kf.set_client(tls=kafka_tls) == False:
             raise Exception("error to set kafka client.")
         topic = kf.get_topic(kf_cfg['topic'])  # get Kafka topic
         if topic == False:
@@ -149,6 +153,7 @@ if __name__ == "__main__":
     parser.add_argument('--config', help='config file path')
     parser.add_argument('--website', help='webiste list file')
     parser.add_argument('--debug', action='store_true', help='enable debug')
+    parser.add_argument('--notls', action='store_true', help='disable tls')
     parser.add_argument('--filelog', action='store_true', help='log to file')
     parser.add_argument('--interval', default=10, help='checking interval')
     args = parser.parse_args()
@@ -162,7 +167,6 @@ if __name__ == "__main__":
             log = get_log(name=name, filelog=True)
         else:
             log = get_log(name=name)
-
     if args.daemon:  # run in deamon mode
         with daemon.DaemonContext(working_directory=os.getcwd()):
             main(args, log)

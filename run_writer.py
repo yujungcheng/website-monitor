@@ -20,12 +20,16 @@ def main(argv, log):
     log.info(f'Writer start.')
     websites = dict()
     config_file = './config.ini'  # default config file name
+    kafka_tls = True  # enable tls connection to kafka
     db = None
     kf = None
     try:
         if args.config != None:
             config_file = args.config
         log.info(f'configure file: {config_file}')
+        if args.notls != None:
+            kafka_tls = False
+        log.info(f'kafka tls connection: {kafka_tls}')
 
         db_cfg = get_config(config_file, 'postgre')
         for key in ('host', 'port', 'dbname', 'user', 'password'):
@@ -61,7 +65,7 @@ def main(argv, log):
                    kf_cfg['certfile'],
                    kf_cfg['keyfile'],
                    log)
-        if kf.set_client() == False:  # set kafka client
+        if kf.set_client(tls=kafka_tls) == False:  # set kafka client
             raise Exception("error to set kafka client.")
         topic_name = kf_cfg['topic']
         topic = kf.get_topic(topic_name)
@@ -151,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('--daemon', action='store_true', help='daemon mode')
     parser.add_argument('--config', help='config file path')
     parser.add_argument('--debug', action='store_true', help='enable debug')
+    parser.add_argument('--notls', action='store_true', help='disable tls')
     parser.add_argument('--filelog', action='store_true', help='log to file')
     args = parser.parse_args()
     if args.debug:

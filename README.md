@@ -12,7 +12,7 @@ stores check result into PostgreSQL database. It is written in python3.6
 - python3-requests 2.18.4
 - python3-daemon 2.1.2
 - python3-psycopg2 2.7.4
-- pykafka 2.8.0
+- python3-pykafka 2.8.0
 
 ## Component
 - checker - check websites status and forward result to kafka. It is Kafka producer.
@@ -49,7 +49,7 @@ Maximum 128 characters for url.
 ## Usage
 ```
 usage: run_checker.py [-h] [--daemon] [--config CONFIG] [--website WEBSITE]
-                      [--debug] [--filelog] [--interval INTERVAL]
+                      [--debug] [--filelog] [--notls] [--interval INTERVAL]
 
 Website monitor - checker
 
@@ -59,6 +59,7 @@ optional arguments:
   --config CONFIG      config file path
   --website WEBSITE    webiste list file
   --debug              enable debug
+  --notls              disable tls connection
   --filelog            log to file
   --interval INTERVAL  checking interval
 ```

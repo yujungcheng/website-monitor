@@ -16,14 +16,16 @@ class Kafka():
         self.client = None
         self.offset_type = OffsetType
 
-    def set_client(self):
+    def set_client(self, tls=True):
         try:
             hosts = f'{self.host}:{self.port}'
-            ssl_config = SslConfig(cafile=self.cafile,
-                                   certfile=self.certfile,
-                                   keyfile=self.keyfile)
-
-            self.client = KafkaClient(hosts=hosts, ssl_config=ssl_config)
+            if tls:
+                ssl_config = SslConfig(cafile=self.cafile,
+                                    certfile=self.certfile,
+                                    keyfile=self.keyfile)
+                self.client = KafkaClient(hosts=hosts, ssl_config=ssl_config)
+            else:
+                self.client = KafkaClient(hosts=hosts)
             return True
         except Exception as e:
             self.log.error(e)
