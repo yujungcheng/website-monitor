@@ -66,8 +66,8 @@ jobs:
       # install packages
       - name: install python packages
         run: |
-          apt update
-          apt install -y python3-daemon python3-requests python3-psycopg2
-          pip3 install pykafka
+          sudo apt update
+          sudo apt install -y python3-daemon python3-requests python3-psycopg2
+          sudo pip3 install pykafka
       
       - run: ls -al
