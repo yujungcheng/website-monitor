@@ -38,8 +38,7 @@ class WebsiteChecker(Thread):
             if self.stop_flag:
                 break
             try:
-                result = self.check_website()
-                self.log.debug(f'{r.status_code} - {self.url}')
+                result = self.check_website(pattern)
                 self.result_queue.put(result)
             except Exception as e:
                 self.log.error(e)
@@ -48,7 +47,7 @@ class WebsiteChecker(Thread):
     def stop(self):
         self.stop_flag = True
 
-    def check_website(self):
+    def check_website(self, pattern):
         start_time = time.time()
         r = requests.get(self.url)
         response_time = time.time() - start_time
@@ -63,6 +62,7 @@ class WebsiteChecker(Thread):
             'status_code': r.status_code,
             'content_check': content_check,
         }
+        self.log.debug(f'{r.status_code} - {self.url}')
         return json.dumps(result).encode('utf-8')
 
 
