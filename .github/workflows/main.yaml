@@ -18,6 +18,7 @@ jobs:
       - name: run postgresql
         run: |
           docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=${DB_PASSWORD} -d postgres:latest
+          sleep 10
 
       - name: create database
         run: |
