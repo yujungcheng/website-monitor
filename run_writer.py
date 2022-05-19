@@ -77,7 +77,7 @@ def main(argv, log):
         if row == False:
             log.info(f'add topic to database.')
             now = datetime.now()
-            created_time = now.strftime("%d-%m-%Y %H:%M:%S")
+            created_time = now.strftime("%Y-%m-%d %H:%M:%S")
             db.add_topic(topic_name, created_time)
             db_offset = 0
         else:
@@ -121,7 +121,7 @@ def main(argv, log):
                 if db_offset < message.offset:
                     if name not in websites:  # add new website to database
                         now = datetime.now()
-                        created_time = now.strftime("%d-%m-%Y %H:%M:%S")
+                        created_time = now.strftime("%Y-%m-%d %H:%M:%S")
                         log.info(f'add new website {name}, {url}')
                         db.add_website(created_time, name, url)
                         websites[name] = url
