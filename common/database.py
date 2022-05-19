@@ -151,7 +151,7 @@ class PostgreSQL():
         """ Create topic to record last offset of the topic """
         try:
             cur = self.conn.cursor()
-            slq = """
+            sql = """
                 INSERT INTO topic (
                     name,
                     created_at,

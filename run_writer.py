@@ -75,7 +75,7 @@ def main(argv, log):
         # get topic offset from database.
         row = db.get_topic_offset(topic_name)
         if row == False:
-            log.info(f'add topic to database.')
+            log.info(f'add topic to database. topic={topic_name}')
             now = datetime.now()
             created_time = now.strftime("%Y-%m-%d %H:%M:%S")
             db.add_topic(topic_name, created_time)
