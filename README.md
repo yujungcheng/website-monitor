@@ -10,10 +10,13 @@ stores results to PostgreSQL database. It is written in python3.6
 - 19-May-2022 1.1 run without tls and several bugfix
 
 ## Required packages installation
+apt install
 - python3-requests 2.18.4
 - python3-daemon 2.1.2
 - python3-psycopg2 2.7.4
-- python3-pykafka 2.8.0
+
+pip3 install
+- pykafka 2.8.0
 
 ## Component
 - checker - check websites status and forward result to kafka. It is Kafka producer.
@@ -101,6 +104,11 @@ postgres=# \list
 postgres=# CREATE DATABASE webmonitor;
 CREATE DATABASE
 ```
+Or use createdb command
+```
+$ createdb --username postgres <Database Name>
+```
+
 
 Tables are created automatically when you run writer.py
 ```

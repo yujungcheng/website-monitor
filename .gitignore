@@ -2,6 +2,6 @@
 *.cert
 *.key
 *.pem
-*.ini
-*.yaml
+sample.*
+sample.*
 **/__pycache__/
