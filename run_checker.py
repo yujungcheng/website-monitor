@@ -70,7 +70,7 @@ def main(args, log):
     log.info(f'Checker start.')
     checkers = []  # store website checker threads
     config_file = './config.ini'  # default config file name
-    website_yaml_file = './website.yaml'  # default website yaml file name
+    website_yaml_file = './websites.yaml'  # default websites yaml file name
     result_queue = Queue(3000)  # queue to forward result to main thread
     kafka_tls = True  # enable tls connection to kafka
     try:
