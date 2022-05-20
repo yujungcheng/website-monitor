@@ -117,7 +117,7 @@ jobs:
           echo "DATA_COUNT=$(docker exec postgres psql -U postgres -d ${DB_NAME} -t -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]')" >> $GITHUB_ENV
       
       - name: validate data count
-        if: "${{ env.DATA_COUNT }}" == "0"
+        if: ${{ env.DATA_COUNT }} == 0
         uses: actions/github-script@v3
         with:
           script: |
