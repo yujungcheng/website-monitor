@@ -89,14 +89,12 @@ jobs:
       # run writer and checker
       - name: start checker and writer
         run: |
-          #./run_checker.py --debug --notls --daemon --filelog
-          touch checker.log
+          ./run_checker.py --debug --notls --daemon --filelog
           ./run_writer.py --debug --notls --daemon --filelog
-          sleep 5
-
+        
+      - run: sleep 5
       - name: print checker log
         run: cat ./checker.log
-      
       - name: print writer log
         run: cat ./writer.log
 
@@ -117,13 +115,13 @@ jobs:
         run: |
           echo "DATA_COUNT=$(docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]')" >> $GITHUB_ENV
       
-      - name: validate data count 1
+      - name: validate data count
         if: ${{ env.DATA_COUNT }} == "0"
         uses: actions/github-script@v3
         with:
           script: |
             core.setFailed('No data collected in the database!!!')
 
-      - name: validate data count 2
+      - name: another data count validation
         run: |
-          if [ "$(cat ./count)" == "0" ]; then echo "No data collected."; /bin/false; fi
+          if [ "${DATA_COUNT}" == "0" ]; then echo "No data collected."; /bin/false; fi
