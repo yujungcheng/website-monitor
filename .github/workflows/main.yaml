@@ -111,8 +111,8 @@ jobs:
         run: |
           docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM topic'
 
+      # validate stored status count
       - name: check status_history table
         run: |
-          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT count(*) status_history'
-
-      # validate
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]' > ./counter
+          if [ "$(cat ./counter)" == "0" ]; then exit 1; fi
