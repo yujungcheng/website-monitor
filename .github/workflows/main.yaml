@@ -50,20 +50,17 @@ jobs:
 
       - name: create topic
         run: |
-          docker run --rm --network kafka-net \
-          -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
+          docker exec kafka \
           kafka-topics.sh --create --topic ${TOPIC} --replication-factor 1 --partitions 1 --bootstrap-server localhost:9092
 
       - name: list topic
         run: |
-          docker run --rm --network kafka-net \
-          -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
+          docker exec kafka \
           kafka-topics.sh --list --bootstrap-server localhost:9092
 
       - name: describe topic
         run: |
-          docker run --rm --network kafka-net \
-          -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
+          docker exec kafka \
           kafka-topics.sh --describe --topic ${TOPIC} --bootstrap-server localhost:9092
 
       # install packages
