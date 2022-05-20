@@ -85,13 +85,17 @@ jobs:
         run: |
           cp sample.websites.yaml websites.yaml
 
-      # run writer
-      - name: start writer
-        run: ./run_writer.py --debug --notls --daemon
-
-      # run checker
+      # run writer and checker
       - name: start checker
-        run: ./run_checker.py --debug --notls --daemon
+        run: |
+          ./run_checker.py --debug --notls --daemon --filelog
+          ./run_writer.py --debug --notls --daemon --filelog
+          sleep 5
+
+      - name: print logfile
+        run: |
+          cat ./checker.log
+          cat ./writer.log
 
       # sleep 60 seconds and check database table
       - name: wait 60 seconds
