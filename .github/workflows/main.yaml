@@ -46,7 +46,7 @@ jobs:
           bitnami/kafka:latest
 
       - name: list docker containers
-        run: docker ps
+        run: sleep 10; docker ps
 
       - name: create topic
         run: |
@@ -89,10 +89,11 @@ jobs:
           ./run_writer.py --debug --notls --daemon --filelog
           sleep 5
 
-      - name: print logfile
-        run: |
-          cat ./checker.log
-          cat ./writer.log
+      - name: print checker log
+        run: cat ./checker.log
+      
+      - name: print writer log
+        run: cat ./writer.log
 
       # sleep 60 seconds and check database table
       - name: wait 60 seconds
@@ -109,3 +110,5 @@ jobs:
       - name: check status_history table
         run: |
           docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT count(*) status_history'
+
+      # validate
