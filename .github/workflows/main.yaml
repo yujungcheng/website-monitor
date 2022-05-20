@@ -89,7 +89,7 @@ jobs:
       # run writer and checker
       - name: start checker and writer
         run: |
-          ./run_checker.py --debug --notls --daemon --filelog
+          #./run_checker.py --debug --notls --daemon --filelog
           ./run_writer.py --debug --notls --daemon --filelog
           sleep 5
 
