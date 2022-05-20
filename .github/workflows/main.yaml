@@ -4,15 +4,17 @@ on: [push]
 
 env:
   TOPIC: monitor
-  DB_NAME: monitor
+  DB_NAME: webmonitor
   DB_PASSWORD: test_password
 
 jobs:
-  database-test:
-    runs-on: ubuntu-latest
+  monitor-test:
+    runs-on: ubuntu-20.04
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
+
+      - run: ls -al
 
       # run postgresql
       - name: run postgresql
@@ -43,7 +45,8 @@ jobs:
           -p 9092:9092 \
           bitnami/kafka:latest
 
-      - run: docker ps
+      - name: list docker containers
+        run: docker ps
 
       - name: create topic
         run: |
@@ -69,5 +72,39 @@ jobs:
           sudo apt update
           sudo apt install -y python3-daemon python3-requests python3-psycopg2
           sudo pip3 install pykafka
-      
-      - run: ls -al
+
+      # create config file
+      - name: create config
+        run: |
+          cp sample.config.ini config.ini
+          sed -i 's/user =/user = postgres/g' config.ini
+          sed -i "s/password =/password = ${DB_PASSWORD}/g" config.ini
+          cat config.ini
+
+      - name: create websites yaml
+        run: |
+          cp sample.websites.yaml websites.yaml
+
+      # run writer
+      - name: start writer
+        run: ./run_writer.py --debug --notls --daemon
+
+      # run checker
+      - name: start checker
+        run: ./run_checker.py --debug --notls --daemon
+
+      # sleep 60 seconds and check database table
+      - name: wait 60 seconds
+        run: sleep 60
+
+      - name: check website table
+        run: |
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM website'
+
+      - name: check topic table
+        run: |
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM topic'
+
+      - name: check status_history table
+        run: |
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT count(*) status_history'
