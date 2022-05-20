@@ -90,6 +90,7 @@ jobs:
       - name: start checker and writer
         run: |
           #./run_checker.py --debug --notls --daemon --filelog
+          touch checker.log
           ./run_writer.py --debug --notls --daemon --filelog
           sleep 5
 
