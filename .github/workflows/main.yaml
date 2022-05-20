@@ -52,19 +52,19 @@ jobs:
         run: |
           docker run --rm --network kafka-net \
           -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
-          kafka-topics.sh --create --topic ${TOPIC} --replication-factor 1 --partitions 1 --bootstrap-server kafka:9092
+          kafka-topics.sh --create --topic ${TOPIC} --replication-factor 1 --partitions 1 --bootstrap-server localhost:9092
 
       - name: list topic
         run: |
           docker run --rm --network kafka-net \
           -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
-          kafka-topics.sh --list --bootstrap-server kafka:9092
+          kafka-topics.sh --list --bootstrap-server localhost:9092
 
       - name: describe topic
         run: |
           docker run --rm --network kafka-net \
           -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 bitnami/kafka:latest \
-          kafka-topics.sh --describe --topic ${TOPIC} --bootstrap-server kafka:9092
+          kafka-topics.sh --describe --topic ${TOPIC} --bootstrap-server localhost:9092
 
       # install packages
       - name: install python packages
