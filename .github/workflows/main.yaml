@@ -112,8 +112,18 @@ jobs:
         run: |
           docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM topic'
 
-      # validate stored status count
-      - name: check status_history table
+      # validate status data in database
+      - name: get row count in status_history table
         run: |
-          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]' > ./counter
-          if [ "$(cat ./counter)" == "0" ]; then exit 1; fi
+          echo "DATA_COUNT=$(docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]')" >> $GITHUB_ENV
+      
+      - name: validate data count 1
+        if: ${{ DATA_COUNT }} == "0"
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('No data collected in the database!!!')
+
+      - name: validate data count 2
+        run: |
+          if [ "$(cat ./count)" == "0" ]; then echo "No data collected."; /bin/false; fi
