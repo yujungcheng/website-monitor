@@ -6,6 +6,7 @@ env:
   TOPIC: monitor
   DB_NAME: webmonitor
   DB_PASSWORD: test_password
+  TEST_SITE: 'http://google.com'
 
 jobs:
   monitor-test:
@@ -14,7 +15,16 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      - run: ls -al
+      # basic website check
+      - name: simple website status test
+        id: site_check
+        run: |
+          echo ::set-output name=status::$(python3 -c "import requests; ret=requests.get('${TEST_SITE}'); print(ret.status_code)")
+
+      - name: verify website status
+        if: ${{ steps.site_check.outputs.status == 200 }}
+        run: |
+          echo "Test site status ${{ steps.site_check.outputs.status }} success!"
 
       # run postgresql
       - name: run postgresql
@@ -27,7 +37,6 @@ jobs:
           docker exec postgres createdb --username postgres ${DB_NAME}
 
       # run zookeeper & kafka
-
       - name: add kafka entity to /etc/hosts
         run: echo '127.0.0.1 kafka' | sudo tee -a /etc/hosts
 
@@ -91,15 +100,15 @@ jobs:
         run: |
           ./run_checker.py --debug --notls --daemon --filelog
           ./run_writer.py --debug --notls --daemon --filelog
-        
-      - run: sleep 10
 
+      # for debuging  
+      - run: sleep 10
       - name: print checker log
         run: cat ./checker.log
       - name: print writer log
         run: cat ./writer.log
 
-      # sleep 60 seconds and check database table
+      # sleep 60 seconds to collect monitoring data and then check database table
       - name: wait 60 seconds
         run: sleep 60
 
