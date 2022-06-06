@@ -1,0 +1,112 @@
+name: website monitor testing with kafka action
+
+on: [push]
+
+env:
+  TOPIC: monitor
+  DB_NAME: webmonitor
+  DB_PASSWORD: test_password
+  TEST_SITE: 'http://google.com'
+
+jobs:
+  monitor-test-with-kafka-action:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # basic website check
+      - name: simple website status test
+        id: site_check
+        run: |
+          echo ::set-output name=status::$(python3 -c "import requests; ret=requests.get('${TEST_SITE}'); print(ret.status_code)")
+
+      - name: verify website status
+        if: ${{ steps.site_check.outputs.status == 200 }}
+        run: |
+          echo "Test site status ${{ steps.site_check.outputs.status }} success!"
+
+      # run postgresql
+      - name: run postgresql
+        run: |
+          docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=${DB_PASSWORD} -d postgres:latest
+          sleep 10
+
+      - name: create database
+        run: |
+          docker exec postgres createdb --username postgres ${DB_NAME}
+
+      # run kafka action
+      - name: Run kafka docker container
+        id: kafka_action
+        uses: yujungcheng/kafka-action@v1
+        with:
+          topic_name: "monitor"
+
+      - name: Get topic description
+        run: echo "${{ steps.kafka_action.outputs.topic_desc }}"
+
+      # install packages
+      - name: install python packages
+        run: |
+          sudo apt update
+          sudo apt install -y python3-daemon python3-requests python3-psycopg2
+          sudo pip3 install pykafka
+
+      # create config file
+      - name: create config
+        run: |
+          cp sample.config.ini config.ini
+          sed -i 's/user =/user = postgres/g' config.ini
+          sed -i "s/password =/password = ${DB_PASSWORD}/g" config.ini
+          cat config.ini
+
+      - name: create websites yaml
+        run: |
+          cp sample.websites.yaml websites.yaml
+
+      # run writer and checker
+      - name: start checker and writer
+        run: |
+          ./run_checker.py --debug --notls --daemon --filelog
+          ./run_writer.py --debug --notls --daemon --filelog
+
+      # for debuging  
+      - run: sleep 10
+      - name: print checker log
+        run: cat ./checker.log
+      - name: print writer log
+        run: cat ./writer.log
+
+      # sleep 60 seconds to collect monitoring data and then check database table
+      - name: wait 60 seconds
+        run: sleep 60
+
+      - name: check website table
+        run: |
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM website'
+
+      - name: check topic table
+        run: |
+          docker exec postgres psql -U postgres -d ${DB_NAME} -c 'SELECT * FROM topic'
+
+      # validate status data in database
+      - name: get row count in status_history table
+        run: |
+          echo "DATA_COUNT=$(docker exec postgres psql -U postgres -d ${DB_NAME} -t -c 'SELECT COUNT(*) FROM status_history' | tr -d '[:space:]')" >> $GITHUB_ENV
+      
+      - name: validate data count
+        if: ${{ env.DATA_COUNT == 0 }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('No data collected in the database!!!')
+
+      - name: another data count validation
+        run: |
+          if [ "${DATA_COUNT}" == "0" ]; then 
+            echo "No data collected."
+            /bin/false
+          else
+            echo "${DATA_COUNT} records collected."
+          fi
