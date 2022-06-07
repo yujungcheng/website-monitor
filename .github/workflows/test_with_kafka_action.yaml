@@ -1,4 +1,4 @@
-name: website monitor testing with kafka action
+name: website monitor test with kafka action
 
 on: [push]
 
@@ -39,7 +39,7 @@ jobs:
       # run kafka action
       - name: Run kafka docker container
         id: kafka_action
-        uses: yujungcheng/kafka-action@v1
+        uses: yujungcheng/kafka-action@v9
         with:
           topic_name: "monitor"
 
